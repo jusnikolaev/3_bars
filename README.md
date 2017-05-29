@@ -1,6 +1,7 @@
 # Ближайшие бары
 
-[FIXME. Здесь будет описание проекта]
+Программа, позволяющая найти самый большой/маленький/ближайший бар. 
+Список баров скачен с data.mos.ru
 
 # Как запустить
 
@@ -8,12 +9,20 @@
 
 Запуск на Linux:
 
-```#!bash
-
-$ python bars.py # possibly requires call of python3 executive instead of just python
+$ python3 bars.py 
 # FIXME вывести пример ответа скрипта
 
-```
+Hello!
+Please, send me command \n 
+For info send command -> Info 
+
+terminal command: closest
+--------------------
+ Название: БАР В ФИЗК.-ОЗДОР.КОМПЛЕКСЕ
+ Адрес: Автозаводская улица, дом 21
+ Телефон: (495) 674-61-19
+ Число посадок: 8
+ --------------------
 
 Запуск на Windows происходит аналогично.
 
