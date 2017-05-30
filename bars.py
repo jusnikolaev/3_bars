@@ -73,8 +73,8 @@ def show_bar(bar):
 # Получение текущих координат пользователя по IP
 def current_location():
     send_url = 'http://freegeoip.net/json'
-    r = requests.get(send_url)
-    j = json.loads(r.text)
+    result = requests.get(send_url)
+    j = json.loads(result.text)
     curr_coords = [j['longitude'], j['latitude']]
     return curr_coords
 
@@ -90,7 +90,6 @@ if __name__ == '__main__':
     game = True
     path = '/Users/jusnikolaev/Desktop/devman/3_bars/list_of_bars.json'
     bars = load_data(path)
-    print(len(bars))
     while game:
         user_message = input('\n Hello! \n '
                              'Please, send me command \n '
