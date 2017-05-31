@@ -86,10 +86,9 @@ def loading_show(list_of_bars, current_count):
         print('Loading: '.format(int(current_count / percent)))
 
 
-if __name__ == '__main__':
+# Общение с пользователем
+def talk_with_user():
     game = True
-    path = '/Users/jusnikolaev/Desktop/devman/3_bars/list_of_bars.json'
-    bars = load_data(path)
     while game:
         user_message = input('\n Hello! \n '
                              'Please, send me command \n '
@@ -111,3 +110,10 @@ if __name__ == '__main__':
             game = False
         else:
             print('I don\'t know...')
+
+
+if __name__ == '__main__':
+    path = '/Users/jusnikolaev/Desktop/devman/3_bars/list_of_bars.json'
+    bars = load_data(path)
+    talk_with_user()
+
