@@ -1,6 +1,7 @@
 import json
 import os
 import requests
+import argparse
 
 
 # Загружаем JSON с барами
@@ -86,45 +87,24 @@ def loading_show(list_of_bars, current_count):
         print('Loading: '.format(int(current_count / percent)))
 
 
-# Общение с пользователем (!!!) Не пропускает задачу, т.к. считает функцию слишком сложной.
-# def talk_with_user():
-#     game = True
-#     while game:
-#         user_message = input('\n Hello! \n '
-#                              'Please, send me command \n '
-#                              'For info send command -> Info \n').lower()
-#         if user_message == 'info':
-#             print('If you want find the biggest bar, write me -> Biggest \n'
-#                   'If you want find the smallest bar, write me -> Smallest \n '
-#                   'If you find closest bar, write me -> Closest')
-#         elif user_message == 'biggest':
-#             get_biggest_bar(bars)
-#         elif user_message == 'smallest':
-#             get_smallest_bar(bars)
-#         elif user_message == 'closest':
-#             curr_user_loc = current_location()
-#             print('Please, wait=(')
-#             get_distance_to_bar(curr_user_loc[0], curr_user_loc[1], bars)
-#         elif user_message == 'exit':
-#             print('Bye, bye...')
-#             game = False
-#         else:
-#             print('I don\'t know...')
-
-
-# Трвиальная версия функции выше.
-def talk_with_user_2(user_message):
-    if user_message == 'biggest':
-        get_biggest_bar(bars)
-    if user_message == 'smallest':
-        get_smallest_bar(bars)
-    if user_message == 'closest':
-        curr_user_loc = current_location()
-        print('Please, wait=(')
-        get_distance_to_bar(curr_user_loc[0], curr_user_loc[1], bars)
+# Тривиальная версия функции выше.
+def user_info_bars(bars):
+    print('Please, wait. \n Looking info about bars...')
+    curr_user_loc = current_location()
+    print('Biggest bar: {}  \n'
+          'Smallest bar: {} \n'
+          'Closest bar: {}'.format(get_biggest_bar(bars),
+                                   get_smallest_bar(bars),
+                                   get_distance_to_bar(curr_user_loc[0], curr_user_loc[1], bars)))
 
 if __name__ == '__main__':
-    path = '/Users/jusnikolaev/Desktop/devman/3_bars/list_of_bars.json'
+    parser = argparse.ArgumentParser(description='Path to file with bars')
+    parser.add_argument('--path', type=argparse.FileType('r'))
+    args = parser.parse_args()
+    try:
+        path = load_data(args.path)
+    except TypeError:
+        path = '/Users/jusnikolaev/Desktop/devman/3_bars/list_of_bars.json'
     bars = load_data(path)
-    user_message = input('Please, enter command: ')
-    talk_with_user_2(user_message)
+    user_info_bars(bars)
+
