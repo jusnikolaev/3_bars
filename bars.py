@@ -4,7 +4,6 @@ import requests
 import argparse
 
 
-# Загружаем JSON с барами
 def load_data(filepath):
     if not os.path.exists(filepath):
         print('No file in directory')
@@ -13,21 +12,25 @@ def load_data(filepath):
         return json.load(file_handler)
 
 
-# Нахождение самого большого бара
 def get_biggest_bar(list_of_bars):
     biggest_bar = max(list_of_bars, key=lambda bar: bar['SeatsCount'])
     print(show_bar(biggest_bar))
 
 
-# Нахождение самого маленького бара
 def get_smallest_bar(list_of_bars):
     smallest_bar = min(list_of_bars, key=lambda bar: bar['SeatsCount'])
     print(show_bar(smallest_bar))
 
 
-# Поиск минимального времени пешком от текущих координат до всех баров
 def get_distance_to_bar(user_lon, user_lat, list_of_bars):
-    step = 0
+    """
+    Функция поиска самого ближайшего бара.
+    На вход принимает координаты и использует API
+    Google.
+    На выход выдаёт бар, до которого бысрее всего
+    идти пешком.
+    """
+    dist_bar_iteration_counter = 0
     for bar in list_of_bars:
         bar_lon = bar['geoData']['coordinates'][1]
         bar_lat = bar['geoData']['coordinates'][0]
@@ -41,15 +44,15 @@ def get_distance_to_bar(user_lon, user_lat, list_of_bars):
         try:
             time_by_walk = maps_api['routes'][0]['legs'][0]['duration'].get('text').split()
             bar['geoData']['coordinates'][0] = count_time(time_by_walk)
-            step += 1
-            loading_show(list_of_bars, step)
+            dist_bar_iteration_counter += 1
+            loading_process_show(list_of_bars, dist_bar_iteration_counter)
         except IndexError:
             print('Index error')
     closest_bar = min(list_of_bars, key=lambda time: time['geoData']['coordinates'][0])
     print(show_bar(closest_bar))
 
 
-# Преобразование полученных временных данных из Гугла в минуты
+# Преобразование ответа из Google в минуты
 def count_time(time_by_walk):
     if len(time_by_walk) is 4:
         time_in_minutes = int(time_by_walk[0]) * 60 + int(time_by_walk[2])
@@ -62,7 +65,6 @@ def count_time(time_by_walk):
         return None
 
 
-# Функция вывода бара
 def show_bar(bar):
     return '-------------------- \n Название: {} \n Адрес: {} \n ' \
            'Телефон: {} \n ' \
@@ -80,14 +82,12 @@ def current_location():
     return curr_coords
 
 
-# Вывод этапа загрузки в процентах
-def loading_show(list_of_bars, current_count):
+def loading_process_show(list_of_bars, current_count):
     percent = int(len(list_of_bars) / 100)
     if current_count % percent is 0:
         print('Loading: '.format(int(current_count / percent)))
 
 
-# Тривиальная версия функции выше.
 def user_info_bars(bars):
     print('Please, wait. \n Looking info about bars...')
     curr_user_loc = current_location()
