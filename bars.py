@@ -1,110 +1,83 @@
-import json
 import os
-import requests
-import argparse
+import json
+from argparse import ArgumentParser
+from math import sqrt
 
 
-def load_data(filepath):
-    if not os.path.exists(filepath):
-        print('No file in directory')
+def load_data(path_to_file):
+    if not os.path.exists(path_to_file):
         return None
-    with open(filepath, 'r', encoding='cp1251') as file_handler:
-        return json.load(file_handler)
-
-
-def get_biggest_bar(list_of_bars):
-    biggest_bar = max(list_of_bars, key=lambda bar: bar['SeatsCount'])
-    print(show_bar(biggest_bar))
-
-
-def get_smallest_bar(list_of_bars):
-    smallest_bar = min(list_of_bars, key=lambda bar: bar['SeatsCount'])
-    print(show_bar(smallest_bar))
-
-
-def get_distance_to_bar(user_lon, user_lat, list_of_bars):
-    """
-    Функция поиска самого ближайшего бара.
-    На вход принимает координаты и использует API
-    Google.
-    На выход выдаёт бар, до которого бысрее всего
-    идти пешком.
-    """
-    dist_bar_iteration_counter = 0
-    for bar in list_of_bars:
-        bar_lon = bar['geoData']['coordinates'][1]
-        bar_lat = bar['geoData']['coordinates'][0]
-        maps_api = requests.get('https://maps.googleapis.com'
-                                '/maps/api/directions/json?'
-                                'origin={},{}&destination={},'
-                                '{}&mode=walking&'
-                                'key=AIzaSyDRhyqsqDr3mzLXtA_Fi4CBaXNo0b-qSzQ'
-                                .format(user_lon, user_lat, bar_lon, bar_lat))
-        maps_api = maps_api.json()
-        try:
-            time_by_walk = maps_api['routes'][0]['legs'][0]['duration'].get('text').split()
-            bar['geoData']['coordinates'][0] = count_time(time_by_walk)
-            dist_bar_iteration_counter += 1
-            loading_process_show(list_of_bars, dist_bar_iteration_counter)
-        except IndexError:
-            print('Index error')
-    closest_bar = min(list_of_bars, key=lambda time: time['geoData']['coordinates'][0])
-    print(show_bar(closest_bar))
-
-
-# Преобразование ответа из Google в минуты
-def count_time(time_by_walk):
-    if len(time_by_walk) is 4:
-        time_in_minutes = int(time_by_walk[0]) * 60 + int(time_by_walk[2])
-        return time_in_minutes
-    elif len(time_by_walk) is 2:
-        time_in_minutes = int(time_by_walk[0])
-        return time_in_minutes
     else:
-        print('Time count error')
-        return None
+        with open(path_to_file, 'r', encoding='cp1251') as json_bars:
+            return json.load(json_bars)
 
 
-def show_bar(bar):
-    return '-------------------- \n Название: {} \n Адрес: {} \n ' \
-           'Телефон: {} \n ' \
-           'Число посадок: {} \n --------------------'.format(
-            bar['Name'], bar['Address'],
-            bar['PublicPhone'][0].get('PublicPhone'), bar['SeatsCount'])
+def get_biggest_bar(json_bars):
+    biggest_bar = max(json_bars, key=lambda bar: bar['SeatsCount'])
+    return biggest_bar
 
 
-# Получение текущих координат пользователя по IP
-def current_location():
-    send_url = 'http://freegeoip.net/json'
-    result = requests.get(send_url)
-    j = json.loads(result.text)
-    curr_coords = [j['longitude'], j['latitude']]
-    return curr_coords
+def get_smallest_bar(json_bars):
+    smallest_bar = min(json_bars, key=lambda bar: bar['SeatsCount'])
+    return smallest_bar
 
 
-def loading_process_show(list_of_bars, current_count):
-    percent = int(len(list_of_bars) / 100)
-    if current_count % percent is 0:
-        print('Loading: '.format(int(current_count / percent)))
+def get_closest_bar(user_lat, user_lon, json_bars):
+    for bar in json_bars:
+        bar_lat = bar['geoData']['coordinates'][0]
+        bar_lon = bar['geoData']['coordinates'][1]
+        distance_to_bar = sqrt((bar_lat - float(user_lat)) ** 2 + (bar_lon - float(user_lon)) ** 2)
+        bar['distance_to_bar'] = distance_to_bar
+    closest_bar = min(json_bars, key=lambda bar: bar['distance_to_bar'])
+    return closest_bar
 
 
-def user_info_bars(bars):
-    print('Please, wait. \n Looking info about bars...')
-    curr_user_loc = current_location()
-    print('Biggest bar: {}  \n'
-          'Smallest bar: {} \n'
-          'Closest bar: {}'.format(get_biggest_bar(bars),
-                                   get_smallest_bar(bars),
-                                   get_distance_to_bar(curr_user_loc[0], curr_user_loc[1], bars)))
+def coordinates_input():
+    game = True
+    while game:
+        isNeedFindBar = input('Do you want to find the closest bar? \n'
+                              'Y/N? \n')
+        if isNeedFindBar == 'y' or isNeedFindBar == 'Y':
+            latitude = input('Your current latitude: ')
+            longitude = input('Your current longitude: ')
+            game = False
+            return latitude, longitude
+        elif isNeedFindBar == 'n' or isNeedFindBar == 'N':
+            game = False
+            return None
+        else:
+            print('Y or N?')
+
+
+def show_info_bar(json_bar, bar_property):
+    if bar_property == 'biggest':
+        print('[The BIGGEST bar is]')
+    elif bar_property == 'smallest':
+        print('[The SMALLEST bar is]')
+    elif bar_property == 'closest':
+        print('[The CLOSEST bar is]')
+    print('Name: {} \n'
+          'Seats count: {} \n'
+          'Address: {} \n'
+          'Phone: {} \n'.format(json_bar['Name'],
+                                json_bar['SeatsCount'],
+                                json_bar['Address'],
+                                json_bar['PublicPhone'][0]['PublicPhone']))
+    print('---------------------------')
+
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Path to file with bars')
-    parser.add_argument('--path', type=argparse.FileType('r'))
-    args = parser.parse_args()
-    try:
-        path = load_data(args.path)
-    except TypeError:
-        path = '/Users/jusnikolaev/Desktop/devman/3_bars/list_of_bars.json'
-    bars = load_data(path)
-    user_info_bars(bars)
+    parser = ArgumentParser(description='Path to file with bars')
+    parser.add_argument('--path', type=str)
+    arg = parser.parse_args()
+
+    json_bars = load_data(arg.path)
+    if json_bars:
+        show_info_bar(get_biggest_bar(json_bars), 'biggest')
+        show_info_bar(get_smallest_bar(json_bars), 'smallest')
+    user_coordinates = coordinates_input()
+    if user_coordinates:
+        show_info_bar(get_closest_bar(user_coordinates[0], user_coordinates[1], json_bars), 'closest')
+
+
 
