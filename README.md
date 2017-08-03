@@ -1,4 +1,4 @@
-# Ближайшие бары
+# Bars
 
 A program that allows you to find the largest / smallest / nearest bar.
 List of bars dowloaded [here](data.mos.ru)
