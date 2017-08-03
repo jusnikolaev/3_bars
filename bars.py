@@ -26,7 +26,8 @@ def get_closest_bar(user_lat, user_lon, json_bars):
     for bar in json_bars:
         bar_lat = bar['geoData']['coordinates'][0]
         bar_lon = bar['geoData']['coordinates'][1]
-        distance_to_bar = sqrt((bar_lat - float(user_lat)) ** 2 + (bar_lon - float(user_lon)) ** 2)
+        distance_to_bar = sqrt((bar_lat - float(user_lat)) ** 2 +
+                               (bar_lon - float(user_lon)) ** 2)
         bar['distance_to_bar'] = distance_to_bar
     closest_bar = min(json_bars, key=lambda bar: bar['distance_to_bar'])
     return closest_bar
@@ -35,31 +36,31 @@ def get_closest_bar(user_lat, user_lon, json_bars):
 def coordinates_input():
     game = True
     while game:
-        isNeedFindBar = input('Do you want to find the closest bar? \n'
-                              'Y/N? \n')
-        if isNeedFindBar == 'y' or isNeedFindBar == 'Y':
-            latitude = input('Your current latitude: ')
-            longitude = input('Your current longitude: ')
+        is_need_find_bar = input('Найти ближайший бар? \n'
+                                 'Д/Н? \n')
+        if is_need_find_bar == 'д' or is_need_find_bar == 'Д':
+            latitude = input('Широта: ')
+            longitude = input('Долгота: ')
             game = False
             return latitude, longitude
-        elif isNeedFindBar == 'n' or isNeedFindBar == 'N':
+        elif is_need_find_bar == 'н' or is_need_find_bar == 'Н':
             game = False
             return None
         else:
-            print('Y or N?')
+            print('Д or Н ?')
 
 
 def show_info_bar(json_bar, bar_property):
     if bar_property == 'biggest':
-        print('[The BIGGEST bar is]')
+        print('[Самый большой бар]')
     elif bar_property == 'smallest':
-        print('[The SMALLEST bar is]')
+        print('[Самый маленький бар]')
     elif bar_property == 'closest':
-        print('[The CLOSEST bar is]')
-    print('Name: {} \n'
-          'Seats count: {} \n'
-          'Address: {} \n'
-          'Phone: {} \n'.format(json_bar['Name'],
+        print('[Самый близкий бар]')
+    print('Название: {} \n'
+          'Число мест: {} \n'
+          'Адрес: {} \n'
+          'Телефон: {} \n'.format(json_bar['Name'],
                                 json_bar['SeatsCount'],
                                 json_bar['Address'],
                                 json_bar['PublicPhone'][0]['PublicPhone']))
@@ -77,7 +78,6 @@ if __name__ == '__main__':
         show_info_bar(get_smallest_bar(json_bars), 'smallest')
     user_coordinates = coordinates_input()
     if user_coordinates:
-        show_info_bar(get_closest_bar(user_coordinates[0], user_coordinates[1], json_bars), 'closest')
-
-
-
+        show_info_bar(get_closest_bar(user_coordinates[0],
+                                      user_coordinates[1],
+                                      json_bars), 'closest')
