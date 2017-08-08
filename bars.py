@@ -22,18 +22,22 @@ def get_smallest_bar(json_bars):
     return smallest_bar
 
 
-def get_closest_bar(user_lat, user_lon, json_bars):
+def get_closest_bar(json_bars):
+    closest_bar = min(json_bars, key=lambda bar: bar['distance_to_bar'])
+    return closest_bar
+
+
+def get_distance_to_bars(user_lat, user_lon, json_bars):
     for bar in json_bars:
         bar_lat = bar['geoData']['coordinates'][0]
         bar_lon = bar['geoData']['coordinates'][1]
         distance_to_bar = sqrt((bar_lat - float(user_lat)) ** 2 +
                                (bar_lon - float(user_lon)) ** 2)
         bar['distance_to_bar'] = distance_to_bar
-    closest_bar = min(json_bars, key=lambda bar: bar['distance_to_bar'])
-    return closest_bar
+    return json_bars
 
 
-def coordinates_input():
+def get_coordinates():
     game = True
     while game:
         is_need_find_bar = input('Найти ближайший бар? \n'
@@ -76,8 +80,7 @@ if __name__ == '__main__':
     if json_bars:
         show_info_bar(get_biggest_bar(json_bars), 'biggest')
         show_info_bar(get_smallest_bar(json_bars), 'smallest')
-    user_coordinates = coordinates_input()
+    user_coordinates = get_coordinates()
     if user_coordinates:
-        show_info_bar(get_closest_bar(user_coordinates[0],
-                                      user_coordinates[1],
-                                      json_bars), 'closest')
+        json_bars = get_distance_to_bars(user_coordinates[0], user_coordinates[1], json_bars)
+        show_info_bar(get_closest_bar(json_bars), 'closest')
