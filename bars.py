@@ -28,9 +28,11 @@ def get_smallest_bar(json_bars):
 
 
 def get_closest_bar(json_bars, user_latitude, user_longitude):
-    closest_bar = min(json_bars, key=lambda bar: get_distance_to_bars(user_latitude,
-                                                                      user_longitude,
-                                                                      bar['geoData']['coordinates']))
+    closest_bar = min(json_bars,
+                      key=lambda bar: get_distance_to_bars(user_latitude,
+                                                           user_longitude,
+                                                           bar['geoData']
+                                                           ['coordinates']))
     return closest_bar
 
 
@@ -90,10 +92,13 @@ if __name__ == '__main__':
     if json_bars:
         json_bars = load_data(arg.path)
         user_coordinates = get_coordinates()
-        user_coordinates = validate_coordinates(user_coordinates[0], user_coordinates[1])
+        user_coordinates = validate_coordinates(user_coordinates[0],
+                                                user_coordinates[1])
         if user_coordinates:
-            show_info_bar(get_closest_bar(json_bars, float(user_coordinates[0]),
-                                          float(user_coordinates[1])), 'closest')
+            show_info_bar(get_closest_bar(json_bars,
+                                          float(user_coordinates[0]),
+                                          float(user_coordinates[1])),
+                          'closest')
             show_info_bar(get_biggest_bar(json_bars), 'biggest')
             show_info_bar(get_smallest_bar(json_bars), 'smallest')
         else:
