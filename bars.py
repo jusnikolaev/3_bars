@@ -4,12 +4,17 @@ from argparse import ArgumentParser
 from math import sqrt
 
 
-def load_data(path_to_file):
+def validate_path(path_to_file):
     if not os.path.exists(path_to_file):
-        return None
+        print('No such file')
+        return False
     else:
-        with open(path_to_file, 'r', encoding='cp1251') as json_bars:
-            return json.load(json_bars)
+        return True
+
+
+def load_data(path_to_file):
+    with open(path_to_file, 'r', encoding='cp1251') as json_bars:
+        return json.load(json_bars)
 
 
 def get_biggest_bar(json_bars):
@@ -22,52 +27,57 @@ def get_smallest_bar(json_bars):
     return smallest_bar
 
 
-def get_closest_bar(json_bars):
-    closest_bar = min(json_bars, key=lambda bar: bar['distance_to_bar'])
+def get_closest_bar(json_bars, user_latitude, user_longitude):
+    closest_bar = min(json_bars, key=lambda bar: get_distance_to_bars(user_latitude,
+                                                                      user_longitude,
+                                                                      bar['geoData']['coordinates']))
     return closest_bar
 
 
-def get_distance_to_bars(user_lat, user_lon, json_bars):
-    for bar in json_bars:
-        bar_lat = bar['geoData']['coordinates'][0]
-        bar_lon = bar['geoData']['coordinates'][1]
-        distance_to_bar = sqrt((bar_lat - float(user_lat)) ** 2 +
-                               (bar_lon - float(user_lon)) ** 2)
-        bar['distance_to_bar'] = distance_to_bar
-    return json_bars
+def get_distance_to_bars(user_lat, user_lon, bar):
+    bar_lat = bar[0]
+    bar_lon = bar[1]
+    distance_to_bar = sqrt((bar_lat - user_lat) ** 2 +
+                           (bar_lon - user_lon) ** 2)
+    return distance_to_bar
+
+
+def validate_coordinates(latitude, longitude):
+    try:
+        latitude = float(latitude)
+        longitude = float(longitude)
+        if -90 <= latitude <= 90 and -180 <= longitude <= 180:
+            return latitude, longitude
+        else:
+            print('Invalid value: Values are not within the allowed range.'
+                  'Try again.')
+            return None
+    except ValueError:
+        print('Invalid value: Coordinates must be numbers.'
+              'Try again.')
+        return None
 
 
 def get_coordinates():
-    game = True
-    while game:
-        is_need_find_bar = input('Найти ближайший бар? \n'
-                                 'Д/Н? \n')
-        if is_need_find_bar == 'д' or is_need_find_bar == 'Д':
-            latitude = input('Широта: ')
-            longitude = input('Долгота: ')
-            game = False
-            return latitude, longitude
-        elif is_need_find_bar == 'н' or is_need_find_bar == 'Н':
-            game = False
-            return None
-        else:
-            print('Д or Н ?')
+    latitude = input('Latitude: ')
+    longitude = input('Longitude: ')
+    return latitude, longitude
 
 
 def show_info_bar(json_bar, bar_property):
     if bar_property == 'biggest':
-        print('[Самый большой бар]')
+        print('[The biggest bar]')
     elif bar_property == 'smallest':
-        print('[Самый маленький бар]')
+        print('[The smallest bar]')
     elif bar_property == 'closest':
-        print('[Самый близкий бар]')
+        print('[The closest bar]')
     print('Название: {} \n'
           'Число мест: {} \n'
           'Адрес: {} \n'
           'Телефон: {} \n'.format(json_bar['Name'],
-                                json_bar['SeatsCount'],
-                                json_bar['Address'],
-                                json_bar['PublicPhone'][0]['PublicPhone']))
+                                  json_bar['SeatsCount'],
+                                  json_bar['Address'],
+                                  json_bar['PublicPhone'][0]['PublicPhone']))
     print('---------------------------')
 
 
@@ -76,11 +86,15 @@ if __name__ == '__main__':
     parser.add_argument('--path', type=str)
     arg = parser.parse_args()
 
-    json_bars = load_data(arg.path)
+    json_bars = validate_path(arg.path)
     if json_bars:
-        show_info_bar(get_biggest_bar(json_bars), 'biggest')
-        show_info_bar(get_smallest_bar(json_bars), 'smallest')
-    user_coordinates = get_coordinates()
-    if user_coordinates:
-        json_bars = get_distance_to_bars(user_coordinates[0], user_coordinates[1], json_bars)
-        show_info_bar(get_closest_bar(json_bars), 'closest')
+        json_bars = load_data(arg.path)
+        user_coordinates = get_coordinates()
+        user_coordinates = validate_coordinates(user_coordinates[0], user_coordinates[1])
+        if user_coordinates:
+            show_info_bar(get_closest_bar(json_bars, float(user_coordinates[0]),
+                                          float(user_coordinates[1])), 'closest')
+            show_info_bar(get_biggest_bar(json_bars), 'biggest')
+            show_info_bar(get_smallest_bar(json_bars), 'smallest')
+        else:
+            print('Error: try again.')
